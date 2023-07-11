@@ -42,9 +42,30 @@ We consider instead the joint density (suppressing $\theta$ dependence from now 
 We can obtain the likelihood by marginalising out $X$ from our joint:
 %
 \begin{equation}
-    p(S) = \sum_X p(S|X) \times p(X).
+    p(S) = \sum_X p(S,X).
 \end{equation}
 %
+What does this mean?
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Marginalising out variables of joint distributions}
+
+		
+\begin{figure}[ht]
+    \centerline{\includegraphics[width=0.6\textwidth]{./figures/horse_race_marginal.pdf}}
+\end{figure}
+    
+\end{frame}
+
+\begin{frame}
+\frametitle{Likelihood revisited}
+
+\begin{equation}
+    p(S) = \sum_X p(S,X).
+\end{equation}
+
 But this really means:
 %
 \begin{equation}
@@ -62,7 +83,7 @@ The \textit{forward algorithm} is an approach from dynamic programming which sto
 
 \vspace{0.5cm}
 
-It uses this trick to calculate the likelihood:
+It uses a marginalisation trick to calculate the likelihood:
 
 \begin{equation}
     \begin{aligned}
@@ -336,21 +357,41 @@ where:
   \node[coordinate, left of=B1] (J2) {};
   \node[] at (J2) {Foraging:};
 
+  \node[coordinate, above of=A1, yshift=-1.25cm] (G1) {};
+  \node[above] at (G1) {};
+  \node[coordinate, above of=A2, yshift=-1.25cm] (G2) {};
+  \node[above] at (G2) {};
+  \node[coordinate, above of=A3, yshift=-1.25cm] (G3) {};
+  \node[above] at (G3) {};
+  \node[coordinate, above of=A4, yshift=-1.25cm] (G4) {};
+  \node[above] at (G4) {};
+  \node[coordinate, below of=B1, yshift=1.25cm] (H1) {};
+  \node[below] at (H1) {};
+  \node[coordinate, below of=B2, yshift=1.25cm] (H2) {};
+  \node[below] at (H2) {$S_2$};
+  \node[coordinate, below of=B3, yshift=1.25cm] (H3) {};
+  \node[below] at (H3) {};
+  \node[coordinate, below of=B4, yshift=1.25cm] (H4) {};
+  \node[below] at (H4) {};
+
   % Horizontal arrows
   \draw[->, line width=1pt, opacity=0] (A1.east) -- (A2.west);
   \draw[->, line width=1pt, opacity=0] (A2.east) -- (A3.west);
   \draw[->, line width=1pt, opacity=0] (A3.east) -- (A4.west);
-  \draw[->, line width=1pt, opacity=1] (B1.east) -- (B2.west);
+  \draw[->, line width=1pt, opacity=1,color=blue] (B1.east) -- (B2.west);
   \draw[->, line width=1pt, opacity=0] (B2.east) -- (B3.west);
   \draw[->, line width=1pt, opacity=0] (B3.east) -- (B4.west);
 
   % diagonal to blocks
-  \draw[->, line width=1pt, opacity=1] (A1.south east) -- (B2.north west);
+  \draw[->, line width=1pt, opacity=1,color=orange] (A1.south east) -- (B2.north west);
   \draw[->, line width=1pt, opacity=0] (A2.south east) -- (B3.north);
   \draw[->, line width=1pt, opacity=0] (A3.south east) -- (B4.north);
   \draw[->, line width=1pt, opacity=0] (B1.north east) -- (A2.south west);
   \draw[->, line width=1pt, opacity=0] (B2.north east) -- (A3.south);
   \draw[->, line width=1pt, opacity=0] (B3.north east) -- (A4.south);
+
+  % vertical arrow
+  \draw[->, line width=1pt, opacity=1, color=purple] (B2.south) -- (H2.north);
 
 \end{tikzpicture}
 \end{center}
@@ -358,8 +399,8 @@ where:
 where: 
 \begin{equation}
     \begin{aligned}
-    \alpha_2(f) = p(&S_2| X_2 = f) \times \\
-    &\{p(X_2=f | X_1=m) \alpha_{1}(m) +p(X_2=f | X_1=f) \alpha_{1}(f)\}.
+    \alpha_2(f) = \{&\textcolor{orange}{p(X_2=f | X_1=m) \alpha_{1}(m)} +\textcolor{blue}{p(X_2=f | X_1=f) \alpha_{1}(f)}\}\\
+    &\times \textcolor{purple}{p(S_2| X_2 = f)} 
     \end{aligned}
 \end{equation}
     
@@ -408,8 +449,8 @@ where:
   \draw[->, line width=1pt, opacity=0] (B3.north east) -- (A4.south);
 
   \node[block, above right of=B4, yshift=-0.4cm] (C1) {$p(S)$};
-  \draw[->, line width=1pt, opacity=1] (B4.east) -- (C1.south);
-  \draw[->, line width=1pt, opacity=1] (A4.east) -- (C1.north);
+  \draw[->, line width=1pt, opacity=1,color=orange] (B4.east) -- (C1.south);
+  \draw[->, line width=1pt, opacity=1,color=blue] (A4.east) -- (C1.north);
 
 \end{tikzpicture}
 \end{center}
@@ -418,7 +459,7 @@ and calculate likelihood via:
 %
 \begin{equation}
     \begin{aligned}
-        p(S) = \alpha_4(m) + \alpha_4(f).
+        p(S) = \textcolor{orange}{\alpha_4(m)} + \textcolor{blue}{\alpha_4(f)}.
     \end{aligned}
 \end{equation}
     
@@ -477,7 +518,149 @@ We instituted a directional HMM model, where only the following state changes we
 \end{frame}
 
 \begin{frame}
-\frametitle{Explain modifications to the forward algorithm to deal with this directionality}
+\frametitle{Modifying forward algorithm: suppose foraging $\rightarrow$ migrating not possible}
+
+\begin{center}
+\begin{tikzpicture}[node distance=2cm, block/.style={draw, minimum width=1cm, minimum height=1cm}]
+
+  % First row
+  \node[block] (A1) {$\alpha_1(m)$};
+  \node[block, right of=A1] (A2) {$\alpha_2(m)$};
+  \node[block, right of=A2] (A3) {};
+  \node[block, right of=A3] (A4) {};
+
+  % Second row
+  \node[block, below of=A1] (B1) {$\alpha_1(f)$};
+  \node[block, right of=B1] (B2) {};
+  \node[block, right of=B2] (B3) {};
+  \node[block, right of=B3] (B4) {};
+
+  % Labels
+  \node[coordinate, left of=A1] (J1) {};
+  \node[] at (J1) {Migrating:};
+  \node[coordinate, left of=B1] (J2) {};
+  \node[] at (J2) {Foraging:};
+
+  \node[coordinate, above of=A1, yshift=-1.25cm] (G1) {};
+  \node[above] at (G1) {};
+  \node[coordinate, above of=A2, yshift=-1.25cm] (G2) {};
+  \node[above] at (G2) {$S_2$};
+  \node[coordinate, above of=A3, yshift=-1.25cm] (G3) {};
+  \node[above] at (G3) {};
+  \node[coordinate, above of=A4, yshift=-1.25cm] (G4) {};
+  \node[above] at (G4) {};
+  \node[coordinate, below of=B1, yshift=1.25cm] (H1) {};
+  \node[below] at (H1) {};
+  \node[coordinate, below of=B2, yshift=1.25cm] (H2) {};
+  \node[below] at (H2) {};
+  \node[coordinate, below of=B3, yshift=1.25cm] (H3) {};
+  \node[below] at (H3) {};
+  \node[coordinate, below of=B4, yshift=1.25cm] (H4) {};
+  \node[below] at (H4) {};
+
+  % Horizontal arrows
+  \draw[->, line width=1pt, opacity=1, color=orange] (A1.east) -- (A2.west);
+  \draw[->, line width=1pt, opacity=0] (A2.east) -- (A3.west);
+  \draw[->, line width=1pt, opacity=0] (A3.east) -- (A4.west);
+  \draw[->, line width=1pt, opacity=0] (B1.east) -- (B2.west);
+  \draw[->, line width=1pt, opacity=0] (B2.east) -- (B3.west);
+  \draw[->, line width=1pt, opacity=0] (B3.east) -- (B4.west);
+
+  % diagonal to blocks
+  \draw[->, line width=1pt, opacity=0] (A1.south east) -- (B2.north);
+  \draw[->, line width=1pt, opacity=0] (A2.south east) -- (B3.north);
+  \draw[->, line width=1pt, opacity=0] (A3.south east) -- (B4.north);
+  \draw[->, line width=1pt, opacity=0,color=blue] (B1.north east) -- (A2.south west);
+  \draw[->, line width=1pt, opacity=0] (B2.north east) -- (A3.south);
+  \draw[->, line width=1pt, opacity=0] (B3.north east) -- (A4.south);
+
+  % vertical arrow
+  \draw[->, line width=1pt, opacity=1, color=purple] (A2.north) -- (G2.south);
+
+
+\end{tikzpicture}
+\end{center}
+
+where: 
+\begin{equation}
+    \begin{aligned}
+    \alpha_2(m) = \textcolor{orange}{p(X_2=m | X_1=m) \alpha_{1}(m)}\times \textcolor{purple}{p(S_2 | X_2 = m)}.
+    \end{aligned}
+\end{equation}
+    
+\end{frame}
+
+\begin{frame}
+\frametitle{Modifying forward algorithm: suppose foraging $\rightarrow$ migrating not possible}
+
+
+\begin{center}
+\begin{tikzpicture}[node distance=2cm, block/.style={draw, minimum width=1cm, minimum height=1cm}]
+
+  % First row
+  \node[block] (A1) {$\alpha_1(m)$};
+  \node[block, right of=A1] (A2) {$\alpha_2(m)$};
+  \node[block, right of=A2] (A3) {};
+  \node[block, right of=A3] (A4) {};
+
+  % Second row
+  \node[block, below of=A1] (B1) {$\alpha_1(f)$};
+  \node[block, right of=B1] (B2) {$\alpha_2(f)$};
+  \node[block, right of=B2] (B3) {};
+  \node[block, right of=B3] (B4) {};
+
+  % Labels
+  \node[coordinate, left of=A1] (J1) {};
+  \node[] at (J1) {Migrating:};
+  \node[coordinate, left of=B1] (J2) {};
+  \node[] at (J2) {Foraging:};
+
+  \node[coordinate, above of=A1, yshift=-1.25cm] (G1) {};
+  \node[above] at (G1) {};
+  \node[coordinate, above of=A2, yshift=-1.25cm] (G2) {};
+  \node[above] at (G2) {};
+  \node[coordinate, above of=A3, yshift=-1.25cm] (G3) {};
+  \node[above] at (G3) {};
+  \node[coordinate, above of=A4, yshift=-1.25cm] (G4) {};
+  \node[above] at (G4) {};
+  \node[coordinate, below of=B1, yshift=1.25cm] (H1) {};
+  \node[below] at (H1) {};
+  \node[coordinate, below of=B2, yshift=1.25cm] (H2) {};
+  \node[below] at (H2) {$S_2$};
+  \node[coordinate, below of=B3, yshift=1.25cm] (H3) {};
+  \node[below] at (H3) {};
+  \node[coordinate, below of=B4, yshift=1.25cm] (H4) {};
+  \node[below] at (H4) {};
+
+  % Horizontal arrows
+  \draw[->, line width=1pt, opacity=0] (A1.east) -- (A2.west);
+  \draw[->, line width=1pt, opacity=0] (A2.east) -- (A3.west);
+  \draw[->, line width=1pt, opacity=0] (A3.east) -- (A4.west);
+  \draw[->, line width=1pt, opacity=1,color=blue] (B1.east) -- (B2.west);
+  \draw[->, line width=1pt, opacity=0] (B2.east) -- (B3.west);
+  \draw[->, line width=1pt, opacity=0] (B3.east) -- (B4.west);
+
+  % diagonal to blocks
+  \draw[->, line width=1pt, opacity=1,color=orange] (A1.south east) -- (B2.north west);
+  \draw[->, line width=1pt, opacity=0] (A2.south east) -- (B3.north);
+  \draw[->, line width=1pt, opacity=0] (A3.south east) -- (B4.north);
+  \draw[->, line width=1pt, opacity=0] (B1.north east) -- (A2.south west);
+  \draw[->, line width=1pt, opacity=0] (B2.north east) -- (A3.south);
+  \draw[->, line width=1pt, opacity=0] (B3.north east) -- (A4.south);
+
+  % vertical arrow
+  \draw[->, line width=1pt, opacity=1, color=purple] (B2.south) -- (H2.north);
+
+\end{tikzpicture}
+\end{center}
+
+where: 
+\begin{equation}
+    \begin{aligned}
+    \alpha_2(f) = \{&\textcolor{orange}{p(X_2=f | X_1=m) \alpha_{1}(m)} +\textcolor{blue}{p(X_2=f | X_1=f) \alpha_{1}(f)}\}\\
+    &\times \textcolor{purple}{p(S_2| X_2 = f)} 
+    \end{aligned}
+\end{equation}
     
 \end{frame}
 
@@ -500,11 +683,22 @@ where $\mu_{\text{pre}} \& \mu_{\text{post}} \sim \text{normal}(-1, 0.5)$ and $\
 \end{frame}
 
 \begin{frame}
-\frametitle{Estimates of parturition dates and states: add elephant pictures ideally}
+\frametitle{Estimates of parturition dates and states: Flaubert}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.6\textwidth]{figures/parturition_dates.jpg}
+    \includegraphics[width=1\textwidth]{figures/flaubert.png}
+\end{figure}
+    
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Estimates of parturition dates and states: Aztec}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{figures/aztec.png}
 \end{figure}
     
 \end{frame}
